@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7
+    container_name: user-management-mongodb-dev
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: user-management
+    volumes:
+      - mongodb_data_dev:/data/db
+    networks:
+      - app-network-dev
+
+  # Backend API (Development with nodemon)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: user-management-backend-dev
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: development
+      MONGO_URI: mongodb://admin:admin123@mongodb:27017/user-management?authSource=admin
+      PORT: 5000
+      JWT_ACCESS_SECRET: dev_access_secret_key
+      JWT_REFRESH_SECRET: dev_refresh_secret_key
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/uploads:/app/uploads
+      - backend_node_modules_dev:/app/node_modules
+    depends_on:
+      - mongodb
+    networks:
+      - app-network-dev
+    command: npm run dev
+
+  # Frontend React App (Development)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: user-management-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:5000
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - frontend_node_modules_dev:/app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - app-network-dev
+    command: npm run dev -- --host
+
+volumes:
+  mongodb_data_dev:
+    driver: local
+  backend_node_modules_dev:
+    driver: local
+  frontend_node_modules_dev:
+    driver: local
+
+networks:
+  app-network-dev:
+    driver: bridge
+

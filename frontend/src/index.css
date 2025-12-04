@@ -1,0 +1,5 @@
+body { background: #f5f7fb; font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0; }
+.card { border-radius: 12px; transition: .25s; }
+.card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+.fade-in { animation: fadeIn .35s ease; }
+@keyframes fadeIn { from { opacity:0; transform: translateY(8px);} to { opacity:1; transform: translateY(0);} }
